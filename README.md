@@ -1,9 +1,7 @@
 
-## 🎯 Objective
+## Objectives
 
 This project implements a **multi-threaded Python server** using Flask to expose statistical APIs based on a public dataset about physical activity, nutrition, and obesity in the United States.
-
-### 🔍 Key Learning Outcomes
 
 - Synchronization mechanisms and multithreading in Python
 - Flask framework and API development
@@ -11,7 +9,7 @@ This project implements a **multi-threaded Python server** using Flask to expose
 - Logging and job queue management
 - Graceful shutdown and concurrent processing patterns
 
-## 🗂️ Dataset
+## Dataset
 
 The dataset is provided by the **U.S. Department of Health & Human Services** and includes yearly health and nutrition statistics per U.S. state. Each row contains:
 
@@ -20,7 +18,7 @@ The dataset is provided by the **U.S. Department of Health & Human Services** an
 - A `Data_Value` (percentage)
 - Optional stratification information (age, gender, education, etc.)
 
-## 🛠️ Implementation Overview
+## Implementation Overview
 
 The server follows a **job-based request model**:
 
@@ -29,7 +27,7 @@ The server follows a **job-based request model**:
 3. A **Thread Pool** processes the job and saves the result to `results/job_id_x.json`.
 4. Clients can check status or retrieve results via `/api/get_results/<job_id>`.
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 app/
@@ -46,9 +44,9 @@ checker/
 pylintrc                     # Code style configuration
 ```
 
-## 🔗 Available API Endpoints
+## Available API Endpoints
 
-### 📈 Statistical Requests
+### Statistical Requests
 
 | Endpoint                         | Description |
 |----------------------------------|-------------|
@@ -61,7 +59,7 @@ pylintrc                     # Code style configuration
 | `/api/mean_by_category`         | Mean values per category (e.g., gender) |
 | `/api/state_mean_by_category`   | Mean by category for a specific state |
 
-### 🧵 Job Management
+### Job Management
 
 | Endpoint                          | Description |
 |-----------------------------------|-------------|
@@ -70,9 +68,9 @@ pylintrc                     # Code style configuration
 | `/api/num_jobs`                  | Number of remaining jobs in queue |
 | `/api/graceful_shutdown`         | Initiate graceful shutdown (stop accepting new jobs) |
 
-## 🧪 Testing & Running
+## Testing & Running
 
-### ⚙️ Setup
+### Setup
 
 ```bash
 python3 -m venv venv
@@ -80,7 +78,7 @@ source venv/bin/activate
 python3 -m pip install -r requirements.txt
 ```
 
-### ▶️ Running the Server
+### Running the Server
 
 In the first terminal:
 
@@ -96,7 +94,7 @@ source venv/bin/activate
 make run_tests
 ```
 
-## 📜 Logging
+## Logging
 
 All route accesses and major events are logged to `webserver.log` with **UTC timestamps** and **rotating file size management**.
 
