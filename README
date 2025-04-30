@@ -1,0 +1,39 @@
+Nume: Vlad Schiopu
+Grupa: 332CB
+Tema 1 - Le Stats Sportif
+
+    Pentru a rezolva tema am completat fișierele data_ingestor, task_runner și routes, și am adăugat fișierul logging.py și TestWebserver.py în directorul de unitteste.
+
+    În data_ingestor.py am citit datele CSV folosind pandas și am creat toate funcțiile care filtrează datele și calculează valorile necesare pentru request-urile
+    care implică date.
+
+    În routes.py am creat funcția make_job, care primește o funcție și argumentele pentru ea și creează un job cu ID-ul "job_id_" + numărul curent de joburi,
+    și trimite jobul task_runner-ului pentru a-l executa. Apoi am completat rutele pentru obținerea datelor. Fiecare confirmă logger-ului că ruta a fost accesată
+    cu datele ei, extrage datele și creează un job cu funcția din data_ingestor corespunzătoare rutei și cu argumentele extrase din request, apoi confirmă
+    logger-ului ieșirea din rută. Pentru celelalte rute, legate de joburi, am creat funcțiile în task_runner, iar în routes.py apelez funcțiile corespunzătoare
+    și returnez rezultatul.
+
+    În task_runner.py am implementat clasa ThreadPool, care conține numărul de thread-uri, o coadă pentru joburi, un event pentru graceful shutdown, o variabilă
+    care ține minte dacă evenimentul de shutdown e în progres, o variabilă pentru status-urile joburilor și un lock pentru sincronizarea status-urilor. Am creat
+    funcția start, care creează și pornește thread-urile. Funcția submit_job, care verifică dacă evenimentul de shutdown a fost activat, apoi marchează jobul ca
+    running, îl adaugă în coada de joburi și returnează ID-ul jobului adăugat. Funcția graceful_shutdown, care setează evenimentul de shutdown, așteaptă să se
+    termine joburile rămase în coadă și apoi returnează statusul. Funcția get_job_status, care returnează statusul pentru fiecare job din acel moment. Funcția
+    get_job_result, care verifică dacă un job s-a încheiat cu succes și returnează rezultatul acestuia din fișierul care a fost creat în urma executării task-ului.
+    Funcția num_pending_jobs, care returnează dimensiunea cozii de joburi.
+
+    În clasa TaskRunner primesc ID-ul jobului împreună cu funcția și argumentele sale, apoi execut task-ul și salvez rezultatul în fișierul cu ID-ul jobului
+    din directorul results, și marchez jobul ca terminat.
+
+    Pentru unittesting am creat în clasa TestWebserver un client de test și funcția verify_job_result, care verifică de maxim 15 ori dacă un job își termină
+    execuția, obține rezultatul jobului și apoi compară rezultatul cu output-ul corect. Apoi, pentru fiecare rută am făcut un test în care trimit un request
+    cu date de test, verific dacă request-ul s-a încheiat cu succes, obțin ID-ul jobului și apoi apelez funcția verify_job_result.
+
+    Pentru logging am creat funcția create_logger, în care creez un logger și îi setez nivelul ca INFO, și îi configurez un RotatingFileHandler care specifică o
+    dimensiune de maximum 10MB per fișier și maximum 5 copii istorice. Apoi creez un formatter și îi schimb parametrul converter în gmtime pentru a obține timpul
+    universal. Setez formatul handlerului, apoi îl adaug logger-ului și îl returnez. Apoi inițializez logger-ul și îl import în routes.py pentru a putea semnala
+    intrarea și ieșirea din fiecare rută.
+
+    Consider ca tema este utila deoarece acopera o varietate mare de componente practice: API cu Flask, procesare de date cu pandas, un sistem de procesare in
+    paralel a taskurilor, creearea de unitteste si loguri pentru a ajuta procesul de debuging. Implementarea este una de baza, dar eficienta. Ca o imbunatatire
+    as fi putut folosi o baza de date pentru stocarea rezultatelor. O dificultate principala a fost debuggingul pentru rute, dar am testat functionalitatea lor
+    folosind requesturi cu CURL.
