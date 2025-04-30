@@ -1,39 +1,106 @@
-Nume: Vlad Schiopu
-Grupa: 332CB
-Tema 1 - Le Stats Sportif
+🎯 Objective
 
-    Pentru a rezolva tema am completat fișierele data_ingestor, task_runner și routes, și am adăugat fișierul logging.py și TestWebserver.py în directorul de unitteste.
+This project implements a multi-threaded Python server using Flask to expose statistical APIs based on a public dataset about physical activity, nutrition, and obesity in the United States (2011–2022). The goal is to deepen understanding of:
 
-    În data_ingestor.py am citit datele CSV folosind pandas și am creat toate funcțiile care filtrează datele și calculează valorile necesare pentru request-urile
-    care implică date.
+    Synchronization mechanisms and multithreading in Python
 
-    În routes.py am creat funcția make_job, care primește o funcție și argumentele pentru ea și creează un job cu ID-ul "job_id_" + numărul curent de joburi,
-    și trimite jobul task_runner-ului pentru a-l executa. Apoi am completat rutele pentru obținerea datelor. Fiecare confirmă logger-ului că ruta a fost accesată
-    cu datele ei, extrage datele și creează un job cu funcția din data_ingestor corespunzătoare rutei și cu argumentele extrase din request, apoi confirmă
-    logger-ului ieșirea din rută. Pentru celelalte rute, legate de joburi, am creat funcțiile în task_runner, iar în routes.py apelez funcțiile corespunzătoare
-    și returnez rezultatul.
+    Flask framework and API development
 
-    În task_runner.py am implementat clasa ThreadPool, care conține numărul de thread-uri, o coadă pentru joburi, un event pentru graceful shutdown, o variabilă
-    care ține minte dacă evenimentul de shutdown e în progres, o variabilă pentru status-urile joburilor și un lock pentru sincronizarea status-urilor. Am creat
-    funcția start, care creează și pornește thread-urile. Funcția submit_job, care verifică dacă evenimentul de shutdown a fost activat, apoi marchează jobul ca
-    running, îl adaugă în coada de joburi și returnează ID-ul jobului adăugat. Funcția graceful_shutdown, care setează evenimentul de shutdown, așteaptă să se
-    termine joburile rămase în coadă și apoi returnează statusul. Funcția get_job_status, care returnează statusul pentru fiecare job din acel moment. Funcția
-    get_job_result, care verifică dacă un job s-a încheiat cu succes și returnează rezultatul acestuia din fișierul care a fost creat în urma executării task-ului.
-    Funcția num_pending_jobs, care returnează dimensiunea cozii de joburi.
+    Data processing using pandas
 
-    În clasa TaskRunner primesc ID-ul jobului împreună cu funcția și argumentele sale, apoi execut task-ul și salvez rezultatul în fișierul cu ID-ul jobului
-    din directorul results, și marchez jobul ca terminat.
+    Logging and job queue management
 
-    Pentru unittesting am creat în clasa TestWebserver un client de test și funcția verify_job_result, care verifică de maxim 15 ori dacă un job își termină
-    execuția, obține rezultatul jobului și apoi compară rezultatul cu output-ul corect. Apoi, pentru fiecare rută am făcut un test în care trimit un request
-    cu date de test, verific dacă request-ul s-a încheiat cu succes, obțin ID-ul jobului și apoi apelez funcția verify_job_result.
+    Graceful shutdown and concurrent processing patterns
 
-    Pentru logging am creat funcția create_logger, în care creez un logger și îi setez nivelul ca INFO, și îi configurez un RotatingFileHandler care specifică o
-    dimensiune de maximum 10MB per fișier și maximum 5 copii istorice. Apoi creez un formatter și îi schimb parametrul converter în gmtime pentru a obține timpul
-    universal. Setez formatul handlerului, apoi îl adaug logger-ului și îl returnez. Apoi inițializez logger-ul și îl import în routes.py pentru a putea semnala
-    intrarea și ieșirea din fiecare rută.
+🗂️ Dataset
 
-    Consider ca tema este utila deoarece acopera o varietate mare de componente practice: API cu Flask, procesare de date cu pandas, un sistem de procesare in
-    paralel a taskurilor, creearea de unitteste si loguri pentru a ajuta procesul de debuging. Implementarea este una de baza, dar eficienta. Ca o imbunatatire
-    as fi putut folosi o baza de date pentru stocarea rezultatelor. O dificultate principala a fost debuggingul pentru rute, dar am testat functionalitatea lor
-    folosind requesturi cu CURL.
+The dataset, provided by the U.S. Department of Health & Human Services, includes yearly health and nutrition statistics per U.S. state. Each row contains:
+
+    A state
+
+    A question (e.g., "Percent of adults aged 18 years and older who have obesity")
+
+    A Data_Value (percentage)
+
+    Optional Stratification info for categories such as age, gender, education
+
+🛠️ Implementation Overview
+
+The server follows a job-based request model:
+
+    Clients send a request (e.g., to compute state averages).
+
+    A unique job_id is assigned and the job is placed in a job queue.
+
+    A Thread Pool picks up jobs, processes them, and writes results to a file (results/job_id_x.json).
+
+    Clients can query the job status/result using /api/get_results/<job_id>.
+
+📁 Project Structure
+
+    app/data_ingestor.py – Loads and filters the CSV data; contains all data processing functions.
+
+    app/task_runner.py – Manages the thread pool and job queue.
+
+    app/routes.py – Defines all Flask routes and handles request/response logic.
+
+    app/logging.py – Sets up RotatingFileHandler to log all route access and operations in UTC format.
+
+    unittests/TestWebserver.py – Unit tests for core functionality.
+
+    results/ – Output directory for job results.
+
+    nutrition_activity_obesity_usa_subset.csv/ – CSV data file.
+
+    checker/checker.py – A checker to verify the functionality
+
+    pylintrc – Coding style checker
+
+🔗 Available API Endpoints
+
+All endpoints accept and return JSON.
+📈 Statistical Requests
+Endpoint	Description
+/api/states_mean	Mean per state (sorted), given a question
+/api/state_mean	Mean for a single state
+/api/best5 / /api/worst5	Top/bottom 5 states based on mean value
+/api/global_mean	Overall average across all states
+/api/diff_from_mean	State differences from global mean
+/api/state_diff_from_mean	One state's difference from global mean
+/api/mean_by_category	Mean values per category (StratificationCategory1)
+/api/state_mean_by_category	Same as above, but for one state
+
+🧵 Job Management
+Endpoint	Description
+/api/get_results/<job_id>	Check status or retrieve result
+/api/jobs	List of all jobs and their status
+/api/num_jobs	Number of remaining jobs in queue
+/api/graceful_shutdown	Begin graceful shutdown (stop accepting new jobs, wait for queue to drain)
+🧪 Testing & Running
+Setup
+
+python3 -m venv venv
+source venv/bin/activate
+python3 -m pip install -r requirements.txt
+
+Running
+
+In first terminal:
+
+source venv/bin/activate
+make run_server
+
+In a second terminal:
+
+source venv/bin/activate
+make run_tests
+
+🧪 Logging
+
+All route accesses and major events are logged to webserver.log, with UTC timestamps and rotating file size management. Logs include:
+
+    Route calls with parameters
+
+    Job creation and completion
+
+    Errors encountered
